@@ -1,4 +1,4 @@
-# $ python3 spot.py
+# $ python3 songfer.py
 
 import os
 import sys
