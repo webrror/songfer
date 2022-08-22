@@ -1,4 +1,4 @@
-# $ python3 spot.py user_id
+# $ python3 spot.py
 
 import os
 import sys
