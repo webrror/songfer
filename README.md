@@ -1,5 +1,5 @@
 # Songfer
-###### Tested only on Linux
+###### Tested only on Linux and WSL
 A python tool to retrieve album arts and transfer songs from Spotify to YouTube Music.
 
 
