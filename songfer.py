@@ -1,12 +1,15 @@
 # $ python3 songfer.py
 
+from curses import echo
 import os
+from platform import platform
 import sys
 import json
 import spotipy
 import webbrowser
 import time
 import datetime
+import subprocess
 
 import spotipy.util as util
 from json.decoder import JSONDecodeError
@@ -132,12 +135,22 @@ while True:
     else: # if playback is a song
         devices = spotifyObject.devices()
         track = spotifyObject.current_user_playing_track()
-        artist = track['item']['artists'][0]['name']
-        track = track['item']['name']
+        art = track['item']['album']['images'][0]['url'] # currently playing album art url
+        artist = track['item']['artists'][0]['name'] # currently playing artist name
+        track = track['item']['name'] # currently playing track name
         d=0
         if artist != "":
             print()
-            print(" Currently playing "+color.BOLD+ artist + " - " + track+" 🎸"+color.END)
+            print(" Currently playing : ", flush=True)
+            print()
+            
+            if sys.platform == 'darwin':
+                if os.environ["TERM_PROGRAM"] == 'iTerm.app':
+                    curl = subprocess.run(["curl", "-s", art], capture_output=True)
+                    #subprocess.run(["sed", "'s/^/    /'"])
+                    subprocess.run(["viu", "-n", "-w", "15", "-"], input=curl.stdout)
+
+            print(" "+color.BOLD+ artist + " - " + track+" 🎸"+color.END)
             print()
             print(" Devices :")
             print()
@@ -152,6 +165,8 @@ while True:
             print()
     
     # Menu for various functions
+    print()
+    print(" ----- MENU -----")
     print()
     print(" 1 - Get album art from Spotify")
     print(" 2 - List your songs in a playlist on Spotify")
