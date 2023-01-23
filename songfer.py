@@ -148,8 +148,9 @@ while True:
                 if os.environ["TERM_PROGRAM"] == 'iTerm.app':
                     curl = subprocess.run(["curl", "-s", art], capture_output=True)
                     #subprocess.run(["sed", "'s/^/    /'"])
-                    subprocess.run(["viu", "-n", "-w", "15", "-"], input=curl.stdout)
+                    subprocess.run(["viu", "-n", "-x", "1" ,"-w", "15", "-"], input=curl.stdout)
 
+            print()
             print(" "+color.BOLD+ artist + " - " + track+" 🎸"+color.END)
             print()
             print(" Devices :")
