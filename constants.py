@@ -30,6 +30,6 @@ SELECT_SOURCE = "SELECT A SOURCE"
 ALBUM_ART_SUB_MENU = [
     "Current playing song",
     "Search using song name, artist, album, .....",
-    "Search using artist name (legacy)",
+    "Search using artist name",
     "Exit to main menu"
 ] 

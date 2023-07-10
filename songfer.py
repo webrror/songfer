@@ -34,27 +34,54 @@ class color:
 
 # ---- METHODS ----
 
+# Print "Not a valid choice! Try again" that's it
+def printNotAValidChoice():
+    print()
+    print(" Not a valid choice! Try again")
+
+def printToGoBack(letter):
+    print()
+    print(" Press any '"+letter+"' key to go back ....")
+    print()
+
+# Print instructions with step number
 def printInstructions():
     instructionNumber = 1;
     for instruction in constants.INSTRUCTIONS:
-        print(" "+str(number)+"] "+instruction)
+        print(" "+str(instructionNumber)+"] "+instruction)
         instructionNumber += 1
 
+# Print menu with index (starts from 0)
+# Args - pass the menu array
 def printMenu(menus):
     menuNumber = 1
     for menu in menus:
         print(" "+str(menuNumber)+" - "+menu)
         menuNumber += 1
 
-def getArtistNames(resultArray):
-    artistNames = ""
+# Get comma seperated values
+# Args - pass the array of maps
+def getCommaSeperatedValuesForArrayMaps(resultArray):
+    values = ""
     for name in resultArray:
         if name == resultArray[-1]:
-            artistNames = artistNames+name['name']
+            values = values + name['name']
         else:
-            artistNames = artistNames+name['name']+", "
-    return artistNames
+            values = values + name['name']+", "
+    return values
 
+# Get comma seperated values
+# Args - pass the array
+def getCommaSeperatedValuesForArray(resultArray):
+    values = ""
+    for value in resultArray:
+        if value == resultArray[-1]:
+            values = values + value
+        else:
+            values = values + value + ", "
+    return values
+
+# Get Album art functionality with 3 sub functionalities
 def albumArt(currentSongIfAny):
     while True:
         print()
@@ -74,7 +101,7 @@ def albumArt(currentSongIfAny):
                 print()
                 webbrowser.open(currentSongIfAny)
 
-        if choice == "2": # Search for album art using songname, artist, album
+        elif choice == "2": # Search for album art using songname, artist, album
             print()
             searchQuery = input(" Enter song name, artist or album : ")
             print()
@@ -88,88 +115,148 @@ def albumArt(currentSongIfAny):
             while True:
                 print()
                 for result in resultsArray:
-                    artistNames = getArtistNames(result['artists'])
+                    artistNames = getCommaSeperatedValuesForArrayMaps(result['artists'])
                     if(result['type'] == "track"):
                         print(" "+str(resultCount)+" - 🎸 "+result['name']+" - "+artistNames)
                     elif(result['type'] == "album"):
                         print(" "+str(resultCount)+" - 💿 "+result['name']+" - "+artistNames)
                     resultCount += 1
-                print()
-                print(" Press any key to go back ....")
-                print()
-                choice = int(input(" Your choice : ")) #! needs more working
-                if(choice < 0 or choice > len(resultsArray)):
+                printToGoBack("e")
+                choice = input(" Your choice : ")
+                if(choice == "e"):
                     break
                 else:
-                    print()
-                    print(" ✅ Album art opened in default browser.")
-                    if(resultsArray[choice]['type'] == "track"):
-                        webbrowser.open(resultsArray[choice]['album']['images'][0]['url'])
-                    elif(resultsArray[choice]['type'] == "album"):
-                        webbrowser.open(resultsArray[choice]['images'][0]['url'])
-                    resultCount = 0
-            
-        if choice == "3":
+                    try:
+                        choice = int(choice)
+                        if(choice < 0 or choice >= len(resultsArray)):
+                            resultCount = 0
+                            printNotAValidChoice()
+                            continue
+                        else:
+                            print()
+                            print(" ✅ Album art opened in default browser.")
+                            if(resultsArray[choice]['type'] == "track"):
+                                webbrowser.open(resultsArray[choice]['album']['images'][0]['url'])
+                            elif(resultsArray[choice]['type'] == "album"):
+                                webbrowser.open(resultsArray[choice]['images'][0]['url'])
+                            resultCount = 0
+                    except ValueError:
+                        resultCount = 0
+                        printNotAValidChoice()
+                        continue
+                    
+        elif choice == "3":
+            def getPopularity(e): # used for sorting
+                return 0 if e['popularity'] is None else e['popularity']
             print()
-            searchQuery = input(" What's the artist name? : ") 
+            searchQuery = input(" What's the artist name? : ")
+            print()
             # Retrieve artist search results
-            searchResults = spotifyObject.search(searchQuery,1,0,"artist")
-
-            # Display first artist details (More options to be added)
-            artist = searchResults['artists']['items'][0]
-            print(" 🎨 Artist Name - "+artist['name']) # name
-            print(" 👥 Followers - "+str(artist['followers']['total']) + " followers") # followers
-            genreList = []
-            for genre in artist['genres']:
-                genreList.append(genre)
-            print(" 🎶 Genres - "+','.join(genreList)) # genres
+            searchResults = spotifyObject.search(searchQuery,limit=5,type="artist")
+            resultCount = 0
+            resultArray = searchResults['artists']['items']
+            resultArray.sort(reverse=True,key=getPopularity)
+            print(" "+str(len(resultArray))+" Results : ")
             print()
+            for artist in resultArray:
+                if artist['genres'] is None or artist['genres'] == []:
+                    genre = "NA"
+                else:
+                    genre = artist['genres'][0]
+                print(" "+str(resultCount)+" - 🎨 "+artist['name']+" - "+genre+" - "+str(artist['followers']['total'])+" followers - 🔥"+str(artist['popularity']))
+                resultCount += 1
 
-            artistID = artist['id']
+            printToGoBack("e")
+            choice = input(" Your choice : ")
+            if(choice == "e"):
+                break
+            else:
+                try:
+                    choice = int(choice)   
+                    artist = resultArray[choice]
+                    genres = getCommaSeperatedValuesForArray(artist['genres'])
+                    # Display artist details
+                    print()
+                    print(" 🎨 Artist Name - "+artist['name']) # name
+                    print(" 👥 Followers - "+str(artist['followers']['total']) + " followers") # followers
+                    print(" 🎶 Genres - "+genres) # genres
 
-            # Album and track details
-            trackURIs = []
-            trackArt = []
-            z = 0
+                    artistID = artist['id']
+                    # Extract album data
+                    albumResults = spotifyObject.artist_albums(artistID, limit=50)
+                    filteredArray = []
 
-            # Extract album data
-            albumResults = spotifyObject.artist_albums(artistID)
-            albumResults = albumResults['items']
+                    for album in albumResults['items']:
+                        if album['album_type'] == 'album' or album['album_type'] == 'single':
+                            filteredArray.append(album)
+                    print()
+                    print(" "+str(len(filteredArray))+" albums :")
+                    # print()
+                    albumCount = 0
+                    # Display all albums of the artist along with songs in them
+                    for item in filteredArray:
+                        print("\n "+str(albumCount)+" - 💿 " + item['name'])
+                        # Extract track data
+                        trackResults = spotifyObject.album_tracks(item['id'])
+                        trackResults = trackResults['items']
+                        print()
+                        for song in trackResults:
+                            print(song['name'], end=", ")
+                        print()
+                        albumCount += 1
 
-            # Display all albums of the artist along with songs in them
-            for item in albumResults:
-                print(" ALBUM: " + item['name'])
-                albumID = item['id']
-                albumArt = item['images'][0]['url']
 
-                # Extract track data
-                trackResults = spotifyObject.album_tracks(albumID)
-                trackResults = trackResults['items']
+                except ValueError:
+                    resultCount = 0
+                    printNotAValidChoice()
+                    continue
 
-                for item in trackResults:
-                    print(" "+str(z) + ": " + item['name'])
-                    trackURIs.append(item['uri'])
-                    trackArt.append(albumArt)
-                    z+=1
-                print()
+            
 
-            # See album art
-            while True:
-                songSelection = input(" Enter a number to see album art of a song or e to exit : ") 
-                print()
-                if songSelection == "e":
-                    break
+            # # Album and track details
+            # trackURIs = []
+            # trackArt = []
+            # z = 0
 
-                # Open art in browser
-                print(" ✅ Album art opened in default browser.")
-                print()
-                webbrowser.open(trackArt[int(songSelection)])
+            # # Extract album data
+            # albumResults = spotifyObject.artist_albums(artistID)
+            # albumResults = albumResults['items']
+
+            # # Display all albums of the artist along with songs in them
+            # for item in albumResults:
+            #     print(" ALBUM: " + item['name'])
+            #     albumID = item['id']
+            #     albumArt = item['images'][0]['url']
+
+            #     # Extract track data
+            #     trackResults = spotifyObject.album_tracks(albumID)
+            #     trackResults = trackResults['items']
+
+            #     for item in trackResults:
+            #         print(" "+str(z) + ": " + item['name'])
+            #         trackURIs.append(item['uri'])
+            #         trackArt.append(albumArt)
+            #         z+=1
+            #     print()
+
+            # # See album art
+            # while True:
+            #     songSelection = input(" Enter a number to see album art of a song or e to exit : ") 
+            #     print()
+            #     if songSelection == "e":
+            #         break
+
+            #     # Open art in browser
+            #     print(" ✅ Album art opened in default browser.")
+            #     print()
+            #     webbrowser.open(trackArt[int(songSelection)])
  
-
-
-        if choice == "4": # Exit to main menu
+        elif choice == "4": # Exit to main menu
             print()
             break
+
+        else:
+            printNotAValidChoice()
 
 def listSongsFromPlaylist():  #! TO BE WORKED ON
     playlistURIs = []
@@ -351,7 +438,7 @@ while True:
         devices = spotifyObject.devices()
         track = spotifyObject.current_user_playing_track()
         art = track['item']['album']['images'][0]['url'] # currently playing album art url
-        artist = getArtistNames(track['item']['artists']) # currently playing artist/'s name/s
+        artist = getCommaSeperatedValuesForArrayMaps(track['item']['artists']) # currently playing artist/'s name/s
         track = track['item']['name'] # currently playing track name
         deviceNumber=0
         if artist != "":
@@ -364,6 +451,12 @@ while True:
                 if os.environ["TERM_PROGRAM"] == 'iTerm.app':
                     curl = subprocess.run(["curl", "-s", art], capture_output=True)
                     subprocess.run(["viu", "-n", "-x", "1" ,"-w", "20", "-"], input=curl.stdout)
+            # elif sys.platform == 'linux':
+            #     curl = subprocess.run(["curl", "-s", art], capture_output=True)
+            #     subprocess.run(["viu", "-n", "-x", "1" ,"-w", "20", "-"], input=curl.stdout)
+            #     print()
+            # else:
+            #     print()
 
             print(" "+color.BOLD+"🎸  "+track+" - "+artist+color.END)
             print()
@@ -384,12 +477,6 @@ while True:
     print(" ----- MENU -----")
     print()
     printMenu(constants.MENU)
-    # print(" 1 - Get album art of current song playing")
-    # print(" 1 - Get album art from Spotify")
-    # print(" 2 - List your songs in a playlist on Spotify")
-    # print(" 3 - Transfer songs from Spotify playlist to Youtube Music")
-    # print(" 4 - Transfer Liked Songs from Spotify to Youtube Music")
-    # print(" 0 - Exit")
     print()
     choice = input(" Your choice : ")     
 
