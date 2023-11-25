@@ -16,8 +16,9 @@ A python tool to retrieve album arts and transfer songs from Spotify to YouTube 
 
   ```
   pip3 install ytmusicapi
-  ``` 
-  #### IMPORTANT : Make sure to also follow [this](https://ytmusicapi.readthedocs.io/en/latest/setup.html#authenticated-requests) part of the ytmusicapi if you want to transfer songs
+  ```
+> [!NOTE]
+> #### Make sure to also follow [this](https://ytmusicapi.readthedocs.io/en/latest/setup.html#authenticated-requests) part of the ytmusicapi if you want to transfer songs
 
 ## Usage
 
