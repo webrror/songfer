@@ -22,6 +22,7 @@ MENU = [
     "Get album art",
     "List your songs in a playlist from Spotify",
     "Transfer songs",
+    "Create a playlist with all liked songs",
     "Exit"
 ]
 

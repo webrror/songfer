@@ -500,7 +500,7 @@ while True:
     
     # Menu for various functions
     print()
-    print(" ----- MENU -----")
+    print(" ----- MAIN MENU -----")
     print()
     printMenu(constants.MENU)
     print()
@@ -698,6 +698,10 @@ while True:
     #     else:
     #         print(" 🚫 Something went wrong.")
 
-    if choice == "4": # Exit application
+    if choice == "4":
+        print()
+        
+
+    if choice == "5": # Exit application
         print()
         break
