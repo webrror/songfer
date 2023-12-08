@@ -1,4 +1,4 @@
-SCOPES = 'user-read-private user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-read-private user-library-read'
+SCOPES = 'user-read-private user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-read-private user-library-read playlist-read-collaborative playlist-modify-private playlist-modify-public'
 USER_YML = 'user.yml'
 SPOTIPY_REDIRECT_URI = 'http://localhost:8888/callback/'
 PORT = '8888'

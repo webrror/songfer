@@ -204,6 +204,31 @@ def albumArt(currentSongIfAny):
                             print(song['name'], end=", ")
                         print()
                         albumCount += 1
+                    
+                    printToGoBack("e")
+                    choice = input(" Your choice : ")
+                    if(choice == "e"):
+                        break
+                    else:
+                        try:
+                            choice = int(choice)
+                            if(choice < 0 or choice >= albumCount):
+                                resultCount = 0
+                                printNotAValidChoice()
+                                continue
+                            else:
+                                print()
+                                print(" ✅ Album art opened in default browser.")
+                                if(filteredArray[choice]['type'] == "track"):
+                                    webbrowser.open(filteredArray[choice]['album']['images'][0]['url'])
+                                elif(filteredArray[choice]['type'] == "album"):
+                                    webbrowser.open(filteredArray[choice]['images'][0]['url'])
+                                resultCount = 0
+
+                        except ValueError:
+                            resultCount = 0
+                            printNotAValidChoice()
+                            continue
 
 
                 except ValueError:
@@ -267,7 +292,7 @@ def listSongsFromPlaylist():  #! TO BE WORKED ON
     print()
 
     # Retrive Playlist details
-    playlists = spotifyObject.user_playlists(username)
+    playlists = spotifyObject.current_user_playlists()
     totalPlaylists = playlists['total'] # total no. of playlists
     playlistResults = playlists['items']
 
@@ -448,9 +473,10 @@ while True:
             # As of July 8, 2023, image support via viu is only for terminals with support for iTerm or Kitty graphics protocol
             # Only able to test on Mac, so limited to darwin and iterm.app
             if sys.platform == 'darwin':
-                if os.environ["TERM_PROGRAM"] == 'iTerm.app':
+                if os.environ["TERM_PROGRAM"] == 'iTerm.app' or os.environ["TERM_PROGRAM"] == 'vscode':
                     curl = subprocess.run(["curl", "-s", art], capture_output=True)
                     subprocess.run(["viu", "-n", "-x", "1" ,"-w", "20", "-"], input=curl.stdout)
+                    print()
             # elif sys.platform == 'linux':
             #     curl = subprocess.run(["curl", "-s", art], capture_output=True)
             #     subprocess.run(["viu", "-n", "-x", "1" ,"-w", "20", "-"], input=curl.stdout)
