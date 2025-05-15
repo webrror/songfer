@@ -1,13 +1,13 @@
 SCOPES = 'user-read-private user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-read-private user-library-read playlist-read-collaborative playlist-modify-private playlist-modify-public'
 USER_YML = 'user.yml'
-SPOTIPY_REDIRECT_URI = 'http://localhost:8888/callback/'
+SPOTIPY_REDIRECT_URI = 'http://127.0.0.1:8888/callback/'
 PORT = '8888'
 
 INSTRUCTIONS = [
     "Go to the Spotify dashboard - https://developer.spotify.com/dashboard/applications",
     "Click create an app and note the Client ID and Client Secret",
     "Now click `Edit Settings`",
-    "Add `http://localhost:"+PORT+"/callback` to the Redirect URIs",
+    "Add `http://127.0.0.1:"+PORT+"/callback` to the Redirect URIs",
     "Note your username from account page - https://www.spotify.com/account/overview/ ",
     "You are now ready to authenticate with Spotify!",
 ]
@@ -23,6 +23,7 @@ MENU = [
     "List your songs in a playlist from Spotify",
     "Transfer songs",
     "Create a playlist with all liked songs",
+    "Refresh",
     "Exit"
 ]
 

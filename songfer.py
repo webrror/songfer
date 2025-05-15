@@ -367,6 +367,9 @@ def listSongsFromPlaylist():  #! TO BE WORKED ON
         print(" ✅ Details saved in 'songlist.csv' file.")
         break
 
+# Function to refresh/restart app
+def refresh():
+    os.execl(sys.executable, sys.executable, *sys.argv)
 
 # ---- AUTHORIZATION CODE FLOW ------
 
@@ -472,31 +475,42 @@ while True:
             print()
             # As of July 8, 2023, image support via viu is only for terminals with support for iTerm or Kitty graphics protocol
             # Only able to test on Mac, so limited to darwin and iterm.app
-            if sys.platform == 'darwin':
-                if os.environ["TERM_PROGRAM"] == 'iTerm.app' or os.environ["TERM_PROGRAM"] == 'vscode':
+            # Update May 16, 2025
+            # Add support for linux platform with WezTerm
+            if sys.platform == 'darwin' or sys.platform == 'linux':
+                if os.environ["TERM_PROGRAM"] == 'iTerm.app' or os.environ["TERM_PROGRAM"] == 'vscode' or os.environ["TERM_PROGRAM"] == 'WezTerm':
                     curl = subprocess.run(["curl", "-s", art], capture_output=True)
                     subprocess.run(["viu", "-n", "-x", "1" ,"-w", "20", "-"], input=curl.stdout)
                     print()
-            # elif sys.platform == 'linux':
-            #     curl = subprocess.run(["curl", "-s", art], capture_output=True)
-            #     subprocess.run(["viu", "-n", "-x", "1" ,"-w", "20", "-"], input=curl.stdout)
-            #     print()
-            # else:
-            #     print()
+                    print()
 
             print(" "+color.BOLD+"🎸  "+track+" - "+artist+color.END)
             print()
             print(" Devices :")
             print()
             while deviceNumber < len(devices['devices']):
-                deviceName = devices['devices'][deviceNumber]['name']
-                deviceType = devices['devices'][deviceNumber]['type']
-                if devices['devices'][deviceNumber]['is_active']:
-                    print("     "+color.BOLD+deviceName+" ("+deviceType+") ✅"+color.END)
+                device = devices['devices'][deviceNumber]
+                deviceName = device['name']
+                deviceType = device['type']
+                
+                # Add emoji based on type
+                if deviceType.lower() == "smartphone":
+                    emoji = "📱"
+                elif deviceType.lower() == "computer":
+                    emoji = "💻"
                 else:
-                    print("     "+deviceName+" ("+deviceType+")")
-                deviceNumber+=1
+                    emoji = "❔"  # fallback/default emoji
+
+                displayName = f"{emoji} {deviceName}"
+
+                if device['is_active']:
+                    print("     " + color.BOLD + displayName + f" ({deviceType}) ✅" + color.END)
+                else:
+                    print("     " + displayName + f" ({deviceType})")
+                
+                deviceNumber += 1
             print()
+
     
     # Menu for various functions
     print()
@@ -701,7 +715,10 @@ while True:
     if choice == "4":
         print()
         
+    if choice == "5": # Refresh app
+        refresh()
+        
 
-    if choice == "5": # Exit application
+    if choice == "6": # Exit application
         print()
         break
