@@ -374,15 +374,15 @@ username = ""
 
 # MAIN LOOP
 while True:
-    # if 'user.yaml' exists, read dev details from file
-    if(os.path.exists(constants.USER_YML)):
+    # if 'user.yaml' exists and is not empty, read dev details from file
+    if os.path.exists(constants.USER_YML) and os.path.getsize(constants.USER_YML) > 0:
         # reading user.yml file
-        f = open(constants.USER_YML, "r")
-        user_dict = {}
-        for line in f:
-            line = line.strip()
-            name, var = line.partition(":")[::2]
-            user_dict[name.strip()] = str(var)
+        with open(constants.USER_YML, "r") as f:
+            user_dict = {}
+            for line in f:
+                line = line.strip()
+                name, var = line.partition(":")[::2]
+                user_dict[name.strip()] = str(var)
 
         # setting environment variables
         username = format(user_dict['USERNAME'])
@@ -395,20 +395,24 @@ while True:
         print(" ----- INSTRUCTIONS -----")
         print()
         printInstructions()
-        
-        f = open("user.yml", "x")
-        f = open("user.yml", "a")
 
-        # getting client_id, secret and username from user and storing to user.yml file
+        # getting client_id, secret and username from user
         print()
-        client_id = input("Enter your Client ID : ")
-        f.write("CLIENT:"+client_id+"\n")
-        secret_client_id = input("Enter your Client Secret : ")
-        f.write("SECRET:"+secret_client_id+"\n")
-        username = input("Enter your Username : ")
-        f.write("USERNAME:"+username+"\n")
-        f.write("PORT:"+constants.PORT+"\n")
-        f.close()
+        client_id = input("Enter your Client ID : ").strip()
+        secret_client_id = input("Enter your Client Secret : ").strip()
+        username = input("Enter your Username : ").strip()
+
+        # only create the file if user actually entered values
+        if client_id and secret_client_id and username:
+            with open(constants.USER_YML, "w") as f:
+                f.write("CLIENT:" + client_id + "\n")
+                f.write("SECRET:" + secret_client_id + "\n")
+                f.write("USERNAME:" + username + "\n")
+                f.write("PORT:" + constants.PORT + "\n")
+        else:
+            print()
+            print(" Required details not entered. Exiting...")
+            sys.exit(1)
 
         # setting environment variables
         os.environ["SPOTIPY_CLIENT_ID"] = client_id
@@ -418,8 +422,10 @@ while True:
     # Erase cache and prompt for user permission
     try:
         token = util.prompt_for_user_token(username, constants.SCOPES)
-    except (AttributeError, JSONDecodeError):
-        os.remove(f".cache-{username}")
+    except (AttributeError, JSONDecodeError, spotipy.oauth2.SpotifyOauthError):
+        cache_file = f".cache-{username}"
+        if os.path.exists(cache_file):
+            os.remove(cache_file)
         token = util.prompt_for_user_token(username, constants.SCOPES)
 
     # Create our spotify object with permissions
@@ -475,7 +481,13 @@ while True:
             if sys.platform == 'darwin':
                 if os.environ["TERM_PROGRAM"] == 'iTerm.app' or os.environ["TERM_PROGRAM"] == 'vscode':
                     curl = subprocess.run(["curl", "-s", art], capture_output=True)
-                    subprocess.run(["viu", "-n", "-x", "1" ,"-w", "20", "-"], input=curl.stdout)
+                    subprocess.run(["viu", "-x", "1" ,"-w", "20", "-"], input=curl.stdout)
+                    print()
+                # Below seperate check for Ghostty as the image was stretching height wise
+                # This was fixed by setting the height to 0
+                elif os.environ["TERM_PROGRAM"] == 'ghostty':
+                    curl = subprocess.run(["curl", "-s", art], capture_output=True)
+                    subprocess.run(["viu", "-x", "1" ,"-w", "20", "-h", "0", "-"], input=curl.stdout)
                     print()
             # elif sys.platform == 'linux':
             #     curl = subprocess.run(["curl", "-s", art], capture_output=True)
