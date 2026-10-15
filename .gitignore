@@ -133,6 +133,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+pyvenv.cfg
+bin/
+include/
 
 # Spyder project settings
 .spyderproject
@@ -166,4 +169,7 @@ cython_debug/
 #.idea/
 
 .DS_Store
+.cache*
 .cache-*
+.idea/
+.vscode/

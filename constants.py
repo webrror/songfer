@@ -23,6 +23,7 @@ MENU = [
     "List your songs in a playlist from Spotify",
     "Transfer songs",
     "Create a playlist with all liked songs",
+    "Change preferred browser",
     "Refresh",
     "Exit"
 ]
@@ -33,5 +34,6 @@ ALBUM_ART_SUB_MENU = [
     "Current playing song",
     "Search using song name, artist, album, .....",
     "Search using artist name",
+    "Change preferred browser",
     "Exit to main menu"
 ] 
