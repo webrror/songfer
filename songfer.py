@@ -10,6 +10,7 @@ import webbrowser
 import time
 import datetime
 import subprocess
+import tempfile
 
 import spotipy.util as util
 from json.decoder import JSONDecodeError
@@ -371,6 +372,8 @@ def listSongsFromPlaylist():  #! TO BE WORKED ON
 def refresh():
     os.execl(sys.executable, sys.executable, *sys.argv)
 
+def clearScreen():
+    os.system("cls" if os.name == "nt" else "clear")
 # ---- AUTHORIZATION CODE FLOW ------
 
 username = ""
@@ -423,13 +426,25 @@ while True:
         os.environ["SPOTIPY_REDIRECT_URI"] = constants.SPOTIPY_REDIRECT_URI
 
     # Erase cache and prompt for user permission
+    class CustomSpotifyOAuth(spotipy.SpotifyOAuth):
+        def _open_auth_url(self):
+            auth_url = self.get_authorize_url()
+            print()
+            print(" Open this URL in your browser if it doesn't open automatically:")
+            print()
+            print(f" {auth_url}")
+            print()
+            # super()._open_auth_url()
+
+    sp_oauth = CustomSpotifyOAuth(scope=constants.SCOPES, username=username)
+
     try:
-        token = util.prompt_for_user_token(username, constants.SCOPES)
+        token = util.prompt_for_user_token(username, constants.SCOPES, oauth_manager=sp_oauth)
     except (AttributeError, JSONDecodeError, spotipy.oauth2.SpotifyOauthError):
         cache_file = f".cache-{username}"
         if os.path.exists(cache_file):
             os.remove(cache_file)
-        token = util.prompt_for_user_token(username, constants.SCOPES)
+        token = util.prompt_for_user_token(username, constants.SCOPES, oauth_manager=sp_oauth)
 
     # Create our spotify object with permissions
     spotifyObject = spotipy.Spotify(auth=token)
@@ -441,6 +456,7 @@ while True:
         product = ""+color.GREEN+user['product'].capitalize()+color.END+""
 
     # Welcome message and display user info
+    clearScreen()
     print()
     print(" ---------------------------------------------- ")
     print()
@@ -484,17 +500,24 @@ while True:
             # Update May 16, 2025
             # Add support for linux platform with WezTerm
             if sys.platform == 'darwin' or sys.platform == 'linux':
-                if os.environ["TERM_PROGRAM"] == 'iTerm.app' or os.environ["TERM_PROGRAM"] == 'vscode' or os.environ["TERM_PROGRAM"] == 'WezTerm':
-                    curl = subprocess.run(["curl", "-s", art], capture_output=True)
-                    subprocess.run(["viu", "-x", "1" ,"-w", "20", "-"], input=curl.stdout)
-                    print()
-                # Below seperate check for Ghostty as the image was stretching height wise
-                # This was fixed by setting the height to 0
-                elif os.environ["TERM_PROGRAM"] == 'ghostty':
-                    curl = subprocess.run(["curl", "-s", art], capture_output=True)
-                    subprocess.run(["viu", "-x", "1" ,"-w", "20", "-h", "0", "-"], input=curl.stdout)
-                    print()
-                    print()
+                term_prog = os.environ.get("TERM_PROGRAM", "")
+                if term_prog in ('iTerm.app', 'vscode', 'WezTerm', 'ghostty'):
+                    temp_art = os.path.join(tempfile.gettempdir(), "songfer_art.jpg")
+                    subprocess.run(["curl", "-s", "-o", temp_art, art])
+
+                    if term_prog == 'ghostty':
+                        subprocess.run(["viu", "-x", "1", "-w", "20", "-h", "0", temp_art])
+                        print()
+                        print()
+                    else:
+                        subprocess.run(["viu", "-x", "1", "-w", "20", temp_art])
+                        print()
+
+                    try:
+                        import termios
+                        termios.tcflush(sys.stdin, termios.TCIFLUSH)
+                    except Exception:
+                        pass
 
             print(" "+color.BOLD+"🎸  "+track+" - "+artist+color.END)
             print()
